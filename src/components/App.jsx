@@ -9,14 +9,27 @@ class App extends Component {
     filter: '',
   };
 
+  componentDidMount() {
+    // Завантаження контактів з localStorage при монтуванні компонента
+    const storedContacts = localStorage.getItem('contacts');
+    if (storedContacts) {
+      this.setState({ contacts: JSON.parse(storedContacts) });
+    }
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    // Збереження контактів у localStorage при оновленні стану
+    if (prevState.contacts !== this.state.contacts) {
+      localStorage.setItem('contacts', JSON.stringify(this.state.contacts));
+    }
+  }
+
   // Додає новий контакт до списку, перевіряючи наявність дублікатів
   addContact = newContact => {
-    // Перевірка наявності дублікатів в контактах
     const isDuplicateContact = this.state.contacts.some(
       contact => contact.name.toLowerCase() === newContact.name.toLowerCase()
     );
 
-    // Додаємо контакт до списку тільки, якщо його ще немає у списку
     isDuplicateContact
       ? alert(`${newContact.name} is already in contacts`)
       : this.setState(prevState => ({
@@ -38,7 +51,6 @@ class App extends Component {
 
   render() {
     const { contacts, filter } = this.state;
-    // Фільтрує контакти згідно з введеним текстом фільтрації
     const filteredContacts = contacts.filter(item => {
       return item.name.toLowerCase().includes(filter.toLowerCase());
     });
@@ -46,11 +58,8 @@ class App extends Component {
     return (
       <AppLayout>
         <h1>Phonebook</h1>
-        {/* Компонент для додавання нових контактів */}
         <ContactForm onAddContact={this.addContact} />
-
-        {/* Умовний рендеринг списку контактів та фільтра */}
-        {contacts.length > 0 && (
+        {filteredContacts.length > 0 && (
           <ContactList
             contacts={filteredContacts}
             filter={filter}
